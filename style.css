@@ -239,7 +239,7 @@ body {
     transform: translateY(0);
 }
 
-.jewellery-section.is-arrow-resuming .info-nav {
+.info-set.is-nav-hidden .info-nav {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
