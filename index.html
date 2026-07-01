@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.3.24/dist/lenis.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.24/dist/lenis.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Italiana&family=Kurale&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+    <section class="jewellery-section">
+        <div class="wrapper">
+            <div class="jewellery-info" aria-live="polite">
+
+                <div class="info-set" data-piece="top">
+                    <div class="info-cluster info-cluster--left">
+                        <aside class="info-box info-box--left">
+                            <div class="info-field">
+                                <span class="info-label">Metal</span>
+                                <p class="info-value">18K Yellow Gold</p>
+                            </div>
+                            <div class="info-field">
+                                <span class="info-label">Technique</span>
+                                <p class="info-value">Hand-crafted filigree</p>
+                            </div>
+                        </aside>
+                        <button class="info-nav info-nav--prev jewel-control--prev" type="button" aria-label="Previous necklace">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 18l-6-6 6-6"/></svg>
+                        </button>
+                    </div>
+                    <div class="info-cluster info-cluster--right">
+                        <aside class="info-box info-box--right">
+                            <h2 class="info-name">Moonlight Grace II</h2>
+                            <p class="info-desc">A luminous piece inspired by moonlit gardens, featuring delicate petals in radiant gold.</p>
+                            <a href="#moonlight-grace" class="info-link">View Collection <span aria-hidden="true">→</span></a>
+                        </aside>
+                        <button class="info-nav info-nav--next jewel-control--next" type="button" aria-label="Next necklace">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18l6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="info-set" data-piece="left">
+                    <div class="info-cluster info-cluster--left">
+                        <aside class="info-box info-box--left">
+                            <div class="info-field">
+                                <span class="info-label">Metal</span>
+                                <p class="info-value">Sterling Silver</p>
+                            </div>
+                            <div class="info-field">
+                                <span class="info-label">Technique</span>
+                                <p class="info-value">Oxidized detailing</p>
+                            </div>
+                        </aside>
+                        <button class="info-nav info-nav--prev jewel-control--prev" type="button" aria-label="Previous necklace">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 18l-6-6 6-6"/></svg>
+                        </button>
+                    </div>
+                    <div class="info-cluster info-cluster--right">
+                        <aside class="info-box info-box--right">
+                            <h2 class="info-name">Moonlight Grace</h2>
+                            <p class="info-desc">Timeless elegance with artisanal silver work and a subtle antique finish.</p>
+                            <a href="#moonlight-grace" class="info-link">View Collection <span aria-hidden="true">→</span></a>
+                        </aside>
+                        <button class="info-nav info-nav--next jewel-control--next" type="button" aria-label="Next necklace">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18l6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="info-set" data-piece="bottom">
+                    <div class="info-cluster info-cluster--left">
+                        <aside class="info-box info-box--left">
+                            <div class="info-field">
+                                <span class="info-label">Metal</span>
+                                <p class="info-value">Rose Gold</p>
+                            </div>
+                            <div class="info-field">
+                                <span class="info-label">Technique</span>
+                                <p class="info-value">Micro-pavÃ© setting</p>
+                            </div>
+                        </aside>
+                        <button class="info-nav info-nav--prev jewel-control--prev" type="button" aria-label="Previous necklace">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 18l-6-6 6-6"/></svg>
+                        </button>
+                    </div>
+                    <div class="info-cluster info-cluster--right">
+                        <aside class="info-box info-box--right">
+                            <h2 class="info-name">Petal Perfection</h2>
+                            <p class="info-desc">Each petal meticulously set with brilliant stones for a blossom that never fades.</p>
+                            <a href="#petal-perfection" class="info-link">View Collection <span aria-hidden="true">→</span></a>
+                        </aside>
+                        <button class="info-nav info-nav--next jewel-control--next" type="button" aria-label="Next necklace">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18l6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="info-set" data-piece="right">
+                    <div class="info-cluster info-cluster--left">
+                        <aside class="info-box info-box--left">
+                            <div class="info-field">
+                                <span class="info-label">Metal</span>
+                                <p class="info-value">Platinum</p>
+                            </div>
+                            <div class="info-field">
+                                <span class="info-label">Technique</span>
+                                <p class="info-value">Lost-wax casting</p>
+                            </div>
+                        </aside>
+                        <button class="info-nav info-nav--prev jewel-control--prev" type="button" aria-label="Previous necklace">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 18l-6-6 6-6"/></svg>
+                        </button>
+                    </div>
+                    <div class="info-cluster info-cluster--right">
+                        <aside class="info-box info-box--right">
+                            <h2 class="info-name">Fragrant Heritage</h2>
+                            <p class="info-desc">Honoring ancestral craftsmanship with a modern silhouette and heirloom quality.</p>
+                            <a href="#fragrant-heritage" class="info-link">View Collection <span aria-hidden="true">→</span></a>
+                        </aside>
+                        <button class="info-nav info-nav--next jewel-control--next" type="button" aria-label="Next necklace">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18l6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="grid">
+
+                <div class="card top">
+                    <div class="leaf">
+                        <div class="leafinner"><img src="assets/MoonlightGrace2.webp" class="jewellery topimg" alt="Moonlight Grace II" /></div>
+                    </div>
+                </div>
+                <div class="card right">
+                    <div class="leaf">
+                        <div class="leafinner"><img src="assets/FragrantHeritage.webp" class="jewellery rightimg" alt="Fragrant Heritage" /></div>
+                    </div>
+                </div>
+                <div class="card bottom">
+                    <div class="leaf">
+                        <div class="leafinner"><img src="assets/PetelPerfection.webp" class="jewellery bottomimg" alt="Petal Perfection" /></div>
+                    </div>
+                </div>
+                <div class="card left">
+                    <div class="leaf">
+                        <div class="leafinner"><img src="assets/MoonlightGrace.webp" class="jewellery leftimg" alt="Moonlight Grace" /></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="category-section">
+        <div class="category-inner">
+            <button class="cat-nav cat-nav--prev" aria-label="Previous categories">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+
+            <div class="category-viewport">
+                <div class="category-track">
+
+                    <article class="category-slide">
+                        <div class="slide-card slide-card--default">
+                            <div class="slide-frame">
+                                <img src="assets/MoonlightGrace2.webp" alt="Haaram collection" class="slide-img" />
+                                <h3 class="slide-name">Haaram</h3>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--expanded">
+                            <div class="expanded-left">
+                                <img src="assets/MoonlightGrace2.webp" alt="Haaram" />
+                            </div>
+                            <div class="expanded-right">
+                                <h3 class="expanded-title">Haaram</h3>
+                                <div class="product-grid">
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace2.webp" alt="" /><span>Haaram</span></a>
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace.webp" alt="" /><span>Haaram</span></a>
+                                    <a href="#" class="product-card"><img src="assets/FragrantHeritage.webp" alt="" /><span>Haaram</span></a>
+                                    <a href="#" class="product-card"><img src="assets/PetelPerfection.webp" alt="" /><span>Haaram</span></a>
+                                </div>
+                                <a href="#haaram" class="explore-btn">Explore Collection <span class="explore-arrow">â†’</span></a>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--inactive">
+                            <span class="inactive-label">Haaram</span>
+                            <img src="assets/MoonlightGrace2.webp" alt="" class="inactive-thumb" />
+                        </div>
+                    </article>
+
+                    <article class="category-slide">
+                        <div class="slide-card slide-card--default">
+                            <div class="slide-frame">
+                                <img src="assets/FragrantHeritage.webp" alt="Necklace collection" class="slide-img" />
+                                <h3 class="slide-name">Necklace</h3>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--expanded">
+                            <div class="expanded-left">
+                                <img src="assets/FragrantHeritage.webp" alt="Necklace" />
+                            </div>
+                            <div class="expanded-right">
+                                <h3 class="expanded-title">Necklace</h3>
+                                <div class="product-grid">
+                                    <a href="#" class="product-card"><img src="assets/FragrantHeritage.webp" alt="" /><span>Necklace</span></a>
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace2.webp" alt="" /><span>Necklace</span></a>
+                                    <a href="#" class="product-card"><img src="assets/PetelPerfection.webp" alt="" /><span>Necklace</span></a>
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace.webp" alt="" /><span>Necklace</span></a>
+                                </div>
+                                <a href="#necklace" class="explore-btn">Explore Collection <span class="explore-arrow">â†’</span></a>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--inactive">
+                            <span class="inactive-label">Necklace</span>
+                            <img src="assets/FragrantHeritage.webp" alt="" class="inactive-thumb" />
+                        </div>
+                    </article>
+
+                    <article class="category-slide">
+                        <div class="slide-card slide-card--default">
+                            <div class="slide-frame">
+                                <img src="assets/PetelPerfection.webp" alt="Botumala collection" class="slide-img" />
+                                <h3 class="slide-name">Botumala</h3>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--expanded">
+                            <div class="expanded-left">
+                                <img src="assets/PetelPerfection.webp" alt="Botumala" />
+                            </div>
+                            <div class="expanded-right">
+                                <h3 class="expanded-title">Botumala</h3>
+                                <div class="product-grid">
+                                    <a href="#" class="product-card"><img src="assets/PetelPerfection.webp" alt="" /><span>Botumala</span></a>
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace.webp" alt="" /><span>Botumala</span></a>
+                                    <a href="#" class="product-card"><img src="assets/FragrantHeritage.webp" alt="" /><span>Botumala</span></a>
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace2.webp" alt="" /><span>Botumala</span></a>
+                                </div>
+                                <a href="#botumala" class="explore-btn">Explore Collection <span class="explore-arrow">â†’</span></a>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--inactive">
+                            <span class="inactive-label">Botumala</span>
+                            <img src="assets/PetelPerfection.webp" alt="" class="inactive-thumb" />
+                        </div>
+                    </article>
+
+                    <article class="category-slide">
+                        <div class="slide-card slide-card--default">
+                            <div class="slide-frame">
+                                <img src="assets/MoonlightGrace.webp" alt="Earrings collection" class="slide-img" />
+                                <h3 class="slide-name">Earrings</h3>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--expanded">
+                            <div class="expanded-left">
+                                <img src="assets/MoonlightGrace.webp" alt="Earrings" />
+                            </div>
+                            <div class="expanded-right">
+                                <h3 class="expanded-title">Earrings</h3>
+                                <div class="product-grid">
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace.webp" alt="" /><span>Earrings</span></a>
+                                    <a href="#" class="product-card"><img src="assets/PetelPerfection.webp" alt="" /><span>Earrings</span></a>
+                                    <a href="#" class="product-card"><img src="assets/FragrantHeritage.webp" alt="" /><span>Earrings</span></a>
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace2.webp" alt="" /><span>Earrings</span></a>
+                                </div>
+                                <a href="#earrings" class="explore-btn">Explore Collection <span class="explore-arrow">â†’</span></a>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--inactive">
+                            <span class="inactive-label">Earrings</span>
+                            <img src="assets/MoonlightGrace.webp" alt="" class="inactive-thumb" />
+                        </div>
+                    </article>
+
+                    <article class="category-slide">
+                        <div class="slide-card slide-card--default">
+                            <div class="slide-frame">
+                                <img src="assets/MoonlightGrace2.webp" alt="Bangles collection" class="slide-img" />
+                                <h3 class="slide-name">Bangles</h3>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--expanded">
+                            <div class="expanded-left">
+                                <img src="assets/MoonlightGrace2.webp" alt="Bangles" />
+                            </div>
+                            <div class="expanded-right">
+                                <h3 class="expanded-title">Bangles</h3>
+                                <div class="product-grid">
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace2.webp" alt="" /><span>Bangles</span></a>
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace.webp" alt="" /><span>Bangles</span></a>
+                                    <a href="#" class="product-card"><img src="assets/PetelPerfection.webp" alt="" /><span>Bangles</span></a>
+                                    <a href="#" class="product-card"><img src="assets/FragrantHeritage.webp" alt="" /><span>Bangles</span></a>
+                                </div>
+                                <a href="#bangles" class="explore-btn">Explore Collection <span class="explore-arrow">â†’</span></a>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--inactive">
+                            <span class="inactive-label">Bangles</span>
+                            <img src="assets/MoonlightGrace2.webp" alt="" class="inactive-thumb" />
+                        </div>
+                    </article>
+
+                    <article class="category-slide">
+                        <div class="slide-card slide-card--default">
+                            <div class="slide-frame">
+                                <img src="assets/FragrantHeritage.webp" alt="Rings collection" class="slide-img" />
+                                <h3 class="slide-name">Rings</h3>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--expanded">
+                            <div class="expanded-left">
+                                <img src="assets/FragrantHeritage.webp" alt="Rings" />
+                            </div>
+                            <div class="expanded-right">
+                                <h3 class="expanded-title">Rings</h3>
+                                <div class="product-grid">
+                                    <a href="#" class="product-card"><img src="assets/FragrantHeritage.webp" alt="" /><span>Rings</span></a>
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace2.webp" alt="" /><span>Rings</span></a>
+                                    <a href="#" class="product-card"><img src="assets/MoonlightGrace.webp" alt="" /><span>Rings</span></a>
+                                    <a href="#" class="product-card"><img src="assets/PetelPerfection.webp" alt="" /><span>Rings</span></a>
+                                </div>
+                                <a href="#rings" class="explore-btn">Explore Collection <span class="explore-arrow">â†’</span></a>
+                            </div>
+                        </div>
+                        <div class="slide-card slide-card--inactive">
+                            <span class="inactive-label">Rings</span>
+                            <img src="assets/FragrantHeritage.webp" alt="" class="inactive-thumb" />
+                        </div>
+                    </article>
+
+                </div>
+            </div>
+
+            <button class="cat-nav cat-nav--next" aria-label="Next categories">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+    <script src="category-slider.js"></script>
+
+</body>
+
+</html>
