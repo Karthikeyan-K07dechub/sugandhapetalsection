@@ -144,6 +144,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .info-box--left {

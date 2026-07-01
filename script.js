@@ -586,6 +586,12 @@ function createJewelleryTimeline(config) {
     isHoverPaused = false;
     isTouchPaused = false;
     isArrowHovered = false;
+    isNeutralState = true;
+    currentIndex = 0;
+    rawRotation = 0;
+    pendingIndex = null;
+    pendingRotation = null;
+    neutralReadyAt = null;
     refreshPauseUI();
     stopAllMotion();
 
@@ -632,6 +638,7 @@ function createJewelleryTimeline(config) {
     isInView = true;
     clearRestTween();
     clearAutoAdvance();
+    clearNeutralResume();
 
     if (pendingIndex !== null && pendingRotation !== null) {
       finalizePiece(pendingIndex, pendingRotation);
