@@ -874,6 +874,31 @@ function createJewelleryTimeline(config) {
     return index === -1 ? 0 : index;
   };
 
+  const getPieceIndex = (piece) => {
+    const index = pieceOrder.indexOf(piece);
+    return index === -1 ? 0 : index;
+  };
+
+  const getVisibleSettledPiece = () => {
+    if (arrowPausePiece && pieceOrder.includes(arrowPausePiece)) {
+      return arrowPausePiece;
+    }
+
+    if (activeInfoPiece && pieceOrder.includes(activeInfoPiece)) {
+      return activeInfoPiece;
+    }
+
+    if (settledHighlightPiece && pieceOrder.includes(settledHighlightPiece)) {
+      return settledHighlightPiece;
+    }
+
+    if (logicalCurrentPiece && pieceOrder.includes(logicalCurrentPiece)) {
+      return logicalCurrentPiece;
+    }
+
+    return "top";
+  };
+
   const getHoverTargetPiece = () => {
     return incomingHighlightPiece || "top";
   };
@@ -891,10 +916,10 @@ function createJewelleryTimeline(config) {
     );
   };
 
-  const getDirectionalPieceState = (piece, direction = 1) => {
+  const getDirectionalPieceState = (fromPiece, piece, direction = 1) => {
     const currentRotation = Number(gsap.getProperty(grid, "rotation")) || 0;
-    const currentIndex = getCurrentPieceIndex();
-    const targetIndex = pieceOrder.indexOf(piece);
+    const currentIndex = getPieceIndex(fromPiece);
+    const targetIndex = getPieceIndex(piece);
     const clockwiseSteps = (targetIndex - currentIndex + pieceOrder.length) % pieceOrder.length;
     const anticlockwiseSteps =
       (currentIndex - targetIndex + pieceOrder.length) % pieceOrder.length;
@@ -1157,7 +1182,9 @@ function createJewelleryTimeline(config) {
     tl.timeScale(1);
     setArrowResumeUI(false);
     arrowResumeFromPiece = null;
-    syncToPieceState(logicalCurrentPiece);
+    const sourcePiece = getVisibleSettledPiece();
+    logicalCurrentPiece = sourcePiece;
+    syncToPieceState(sourcePiece);
     logicalCurrentPiece = piece;
     if (!isArrowHoverPaused) {
       isHoverPaused = false;
@@ -1183,7 +1210,7 @@ function createJewelleryTimeline(config) {
       setManualPauseUI(isTouchPaused || isHoverPaused || isArrowHoverPaused);
     };
 
-    const state = getDirectionalPieceState(piece, direction);
+    const state = getDirectionalPieceState(sourcePiece, piece, direction);
 
     navTween = gsap.timeline({
       defaults: {
