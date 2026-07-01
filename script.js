@@ -637,18 +637,23 @@ function createJewelleryTimeline(config) {
       },
       onComplete: () => {
         tl.pause(0);
+        tl.timeScale(1);
+        gsap.set(grid, { rotation: 0, scale: 1, y: 0 });
+        gsap.set(".jewellery", { scale: 1, x: 0, y: 0, rotation: 0 });
         updateLeafOverflow(0);
         setActiveInfoPiece(null);
         setHoverPhase("top", null);
         setPauseEligibility(false);
         resetTween = null;
 
-        requestAnimationFrame(() => {
+        resumeCall = gsap.delayedCall(LOOP_REPEAT_DELAY, () => {
+          resumeCall = null;
+
           if (!isInView || isTouchPaused || isHoverPaused || isArrowHoverPaused) {
             return;
           }
 
-          tl.play(0);
+          playLoop();
         });
       },
     });
@@ -887,7 +892,18 @@ function createJewelleryTimeline(config) {
     tl.pause(piecePauseTimes[currentPiece]);
 
     if (currentPiece === "right") {
-      restartAutoplayFromReset();
+      setActiveInfoPiece("right");
+      setHoverPhase("top", "right");
+      tl.pause(piecePauseTimes.right);
+
+      resumeCall = gsap.delayedCall(0.03, () => {
+        resumeCall = null;
+        if (!isInView || isTouchPaused || isHoverPaused || isArrowHoverPaused) {
+          return;
+        }
+
+        tl.play();
+      });
       return;
     }
 
