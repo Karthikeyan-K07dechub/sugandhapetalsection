@@ -197,6 +197,8 @@ function createJewelleryTimeline(config) {
   let pendingRotation = null;
   let activeTween = null;
   let autoAdvanceCall = null;
+  let neutralResumeCall = null;
+  let neutralReadyAt = null;
   let restTween = null;
   let isInView = false;
   let isHoverPaused = false;
@@ -221,6 +223,13 @@ function createJewelleryTimeline(config) {
     }
   };
 
+  const clearNeutralResume = () => {
+    if (neutralResumeCall) {
+      neutralResumeCall.kill();
+      neutralResumeCall = null;
+    }
+  };
+
   const clearActiveTween = () => {
     if (activeTween) {
       activeTween.kill();
@@ -237,6 +246,7 @@ function createJewelleryTimeline(config) {
 
   const stopAllMotion = () => {
     clearAutoAdvance();
+    clearNeutralResume();
     clearActiveTween();
     clearRestTween();
   };
@@ -294,8 +304,72 @@ function createJewelleryTimeline(config) {
     pendingIndex = null;
     pendingRotation = null;
     isNeutralState = false;
+    neutralReadyAt = null;
+    clearNeutralResume();
     applyPieceState(index, rotation);
     showInfoPieceImmediate(getPieceName(index));
+  };
+
+  const startTopHighlightFromNeutral = () => {
+    if (!isInView || !isNeutralState || isTouchPaused || isHoverPaused || isArrowHovered) {
+      return false;
+    }
+
+    neutralReadyAt = null;
+    clearNeutralResume();
+    animateToIndex(0, {
+      direction: 1,
+      duration: STEP_DURATION,
+      autoDelay: HIGHLIGHT_HOLD,
+    });
+    return true;
+  };
+
+  const queueNeutralResume = (delaySeconds) => {
+    neutralReadyAt = performance.now() + delaySeconds * 1000;
+    clearNeutralResume();
+
+    neutralResumeCall = gsap.delayedCall(delaySeconds, () => {
+      neutralResumeCall = null;
+      startTopHighlightFromNeutral();
+    });
+  };
+
+  const resumeNeutralSequence = () => {
+    if (!isNeutralState || neutralReadyAt === null) {
+      return false;
+    }
+
+    const remainingSeconds = Math.max(0, (neutralReadyAt - performance.now()) / 1000);
+
+    if (remainingSeconds === 0) {
+      return startTopHighlightFromNeutral();
+    }
+
+    if (!neutralResumeCall) {
+      neutralResumeCall = gsap.delayedCall(remainingSeconds, () => {
+        neutralResumeCall = null;
+        startTopHighlightFromNeutral();
+      });
+    }
+
+    return true;
+  };
+
+  const watchNeutralSequence = () => {
+    if (!isNeutralState || neutralReadyAt === null) {
+      return;
+    }
+
+    if (!isInView || isTouchPaused || isHoverPaused || isArrowHovered) {
+      return;
+    }
+
+    if (performance.now() < neutralReadyAt) {
+      return;
+    }
+
+    startTopHighlightFromNeutral();
   };
 
   const getTargetRotation = (fromIndex, fromRotation, toIndex, direction = 1) => {
@@ -394,6 +468,7 @@ function createJewelleryTimeline(config) {
     } = options;
 
     clearAutoAdvance();
+    clearNeutralResume();
     clearRestTween();
     clearActiveTween();
     pendingIndex = null;
@@ -411,25 +486,15 @@ function createJewelleryTimeline(config) {
         currentIndex = 0;
         rawRotation = 0;
         isNeutralState = true;
+        isHoverPaused = false;
         gsap.set(grid, { rotation: 0, scale: 1, y: 0 });
         gsap.set(".jewellery", { scale: 1, x: 0, y: 0, rotation: 0 });
         updateLeafOverflow(0);
         hideInfoPiecesImmediate();
+        refreshPauseUI();
 
-        if (isInView && !isHoverPaused && !isTouchPaused && !isArrowHovered) {
-          autoAdvanceCall = gsap.delayedCall(delayBeforeTop, () => {
-            autoAdvanceCall = null;
-
-            if (!isInView || isHoverPaused || isTouchPaused || isArrowHovered) {
-              return;
-            }
-
-            animateToIndex(0, {
-              direction: 1,
-              duration: STEP_DURATION,
-              autoDelay: HIGHLIGHT_HOLD,
-            });
-          });
+        if (isInView) {
+          queueNeutralResume(delayBeforeTop);
         }
       },
     });
@@ -488,6 +553,7 @@ function createJewelleryTimeline(config) {
 
   const pauseAutoplay = () => {
     clearAutoAdvance();
+    clearNeutralResume();
     if (pendingIndex !== null) {
       settleToResolvedPiece();
     }
@@ -504,11 +570,11 @@ function createJewelleryTimeline(config) {
     refreshPauseUI();
 
     if (isNeutralState) {
-      animateToIndex(0, {
-        direction: 1,
-        duration: STEP_DURATION,
-        autoDelay: HIGHLIGHT_HOLD,
-      });
+      if (resumeNeutralSequence()) {
+        return;
+      }
+
+      startTopHighlightFromNeutral();
       return;
     }
 
@@ -570,6 +636,7 @@ function createJewelleryTimeline(config) {
     if (pendingIndex !== null && pendingRotation !== null) {
       finalizePiece(pendingIndex, pendingRotation);
     } else if (isNeutralState) {
+      isHoverPaused = false;
       gsap.set(grid, { rotation: 0, scale: 1, y: 0 });
       gsap.set(".jewellery", { scale: 1, x: 0, y: 0, rotation: 0 });
       updateLeafOverflow(0);
@@ -583,11 +650,9 @@ function createJewelleryTimeline(config) {
 
     if (!isTouchPaused && !isHoverPaused && !isArrowHovered) {
       if (isNeutralState) {
-        animateToIndex(0, {
-          direction: 1,
-          duration: STEP_DURATION,
-          autoDelay: HIGHLIGHT_HOLD,
-        });
+        if (!resumeNeutralSequence()) {
+          startTopHighlightFromNeutral();
+        }
       } else {
         scheduleAutoAdvance(HIGHLIGHT_HOLD);
       }
@@ -671,12 +736,16 @@ function createJewelleryTimeline(config) {
     });
   };
 
+  const isPointerOverAnyArrow = () =>
+    [...prevButtons, ...nextButtons].some((button) => button.matches(":hover"));
+
   const stepPiece = (direction) => {
     const baseIndex = pendingIndex !== null ? pendingIndex : currentIndex;
     const nextIndex = (baseIndex + direction + pieceOrder.length) % pieceOrder.length;
+    const shouldKeepArrowHover = isPointerOverAnyArrow();
 
     isHoverPaused = false;
-    isArrowHovered = false;
+    isArrowHovered = shouldKeepArrowHover;
     refreshPauseUI();
 
     animateToIndex(nextIndex, {
@@ -751,6 +820,8 @@ function createJewelleryTimeline(config) {
     onLeaveBack: animateToRest,
   });
 
+  gsap.ticker.add(watchNeutralSequence);
+
   return () => {
     section.removeEventListener("mousemove", handlePointerMove);
     section.removeEventListener("mouseleave", handleSectionMouseLeave);
@@ -766,6 +837,7 @@ function createJewelleryTimeline(config) {
       button.removeEventListener("mouseleave", handleArrowHoverLeave);
     });
     visibilityTrigger.kill();
+    gsap.ticker.remove(watchNeutralSequence);
     stopAllMotion();
   };
 }
