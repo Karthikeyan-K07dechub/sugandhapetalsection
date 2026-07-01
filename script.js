@@ -136,6 +136,26 @@ function setActiveInfoPiece(piece) {
   });
 }
 
+function hideInfoPiecesImmediate() {
+  gsap.set(".info-set", { opacity: 0, visibility: "hidden" });
+  gsap.set(".info-box--left", { x: -32, opacity: 0 });
+  gsap.set(".info-box--right", { x: 32, opacity: 0 });
+  setActiveInfoPiece(null);
+}
+
+function showInfoPieceImmediate(piece) {
+  if (!piece) {
+    hideInfoPiecesImmediate();
+    return;
+  }
+
+  hideInfoPiecesImmediate();
+  gsap.set(`.info-set[data-piece="${piece}"]`, { opacity: 1, visibility: "visible" });
+  gsap.set(`.info-set[data-piece="${piece}"] .info-box--left`, { x: 0, opacity: 1 });
+  gsap.set(`.info-set[data-piece="${piece}"] .info-box--right`, { x: 0, opacity: 1 });
+  setActiveInfoPiece(piece);
+}
+
 function getCurrentActivePiece(rotation) {
   const selector = getActiveCardSelector(rotation);
   return selector ? selectorToPiece[selector] : null;
@@ -250,6 +270,8 @@ function createJewelleryTimeline(config) {
   let hoverTween = null;
   let navTween = null;
   let resumeCall = null;
+  let cycleRestartCall = null;
+  let manualFlowToken = 0;
   let incomingHighlightPiece = "top";
   let settledHighlightPiece = null;
   let isInView = false;
@@ -259,6 +281,7 @@ function createJewelleryTimeline(config) {
   let activeHoverCard = null;
   let isPauseEligible = false;
   let lastPointer = { x: -1, y: -1 };
+  let arrowPausePiece = null;
   const cycleDuration = STEP_DURATION * 5 + HIGHLIGHT_HOLD * 4;
   const pieceTimes = {
     top: STEP_DURATION,
@@ -279,14 +302,20 @@ function createJewelleryTimeline(config) {
   updateLeafOverflow(0);
   setActiveInfoPiece(null);
 
-  const tl = gsap.timeline({
-    paused: true,
-    repeat: -1,
-    repeatDelay: LOOP_REPEAT_DELAY,
-    onUpdate: () => {
-      updateLeafOverflow(gsap.getProperty(grid, "rotation"));
-    },
-  });
+  function resetCycleState() {
+    activeHoverCard = null;
+    lastPointer = { x: -1, y: -1 };
+    arrowPausePiece = null;
+    setPauseEligibility(false);
+    setHoverPhase("top", null);
+    hideInfoPiecesImmediate();
+    isHoverPaused = false;
+    isArrowHoverPaused = false;
+    setManualPauseUI(false);
+    setArrowResumeUI(false);
+  }
+
+  let tl = null;
 
   const setPauseEligibility = (value) => {
     isPauseEligible = value;
@@ -301,7 +330,20 @@ function createJewelleryTimeline(config) {
     settledHighlightPiece = settled;
   };
 
+  const getNextPiece = (piece) => {
+    const index = pieceOrder.indexOf(piece);
+    if (index === -1) {
+      return "top";
+    }
+
+    return pieceOrder[(index + 1) % pieceOrder.length];
+  };
+
+  const isTimelineAtCycleEnd = () => !!tl && tl.progress() >= 0.999;
+
   const stopAuxTweens = () => {
+    manualFlowToken += 1;
+
     if (hoverTween) {
       hoverTween.kill();
       hoverTween = null;
@@ -315,6 +357,11 @@ function createJewelleryTimeline(config) {
     if (resumeCall) {
       resumeCall.kill();
       resumeCall = null;
+    }
+
+    if (cycleRestartCall) {
+      cycleRestartCall.kill();
+      cycleRestartCall = null;
     }
   };
 
@@ -348,6 +395,41 @@ function createJewelleryTimeline(config) {
   };
 
   // STEP 1 → zoom section + highlight TOP
+  const buildMainTimeline = () => {
+    tl = gsap.timeline({
+      paused: true,
+      repeat: 0,
+      onUpdate: () => {
+        updateLeafOverflow(gsap.getProperty(grid, "rotation"));
+      },
+      onComplete: () => {
+        setArrowResumeUI(false);
+
+        if (cycleRestartCall) {
+          cycleRestartCall.kill();
+          cycleRestartCall = null;
+        }
+
+        if (!isInView || isTouchPaused || isHoverPaused || isArrowHoverPaused) {
+          return;
+        }
+
+        cycleRestartCall = gsap.delayedCall(LOOP_REPEAT_DELAY, () => {
+          cycleRestartCall = null;
+
+          if (!isInView || isTouchPaused || isHoverPaused || isArrowHoverPaused) {
+            return;
+          }
+
+          startFreshCycle();
+        });
+      },
+    });
+
+  tl.call(() => setHoverPhase("top", null), null, 0);
+  tl.call(() => setPauseEligibility(false), null, 0);
+
+  // STEP 1 â†’ zoom section + highlight TOP
   tl.to(grid, {
     scale: gridScale,
     y: gridY,
@@ -435,9 +517,17 @@ function createJewelleryTimeline(config) {
   tl.to(".rightimg", { scale: 1, x: 0, duration: 0.9 }, "<");
 
   setupInfoAnimations(tl);
+    return tl;
+  };
+
+  buildMainTimeline();
 
   const setManualPauseUI = (isPaused) => {
     section.classList.toggle("is-user-paused", isPaused);
+  };
+
+  const setArrowResumeUI = (isResuming) => {
+    section.classList.toggle("is-arrow-resuming", isResuming);
   };
 
   const pauseLoop = (manual = false) => {
@@ -471,6 +561,10 @@ function createJewelleryTimeline(config) {
     stopAuxTweens();
 
     setManualPauseUI(false);
+    if (isTimelineAtCycleEnd()) {
+      startFreshCycle();
+      return;
+    }
     tl.play();
   };
 
@@ -543,6 +637,11 @@ function createJewelleryTimeline(config) {
       return;
     }
 
+    if (isTimelineAtCycleEnd()) {
+      startFreshCycle();
+      return;
+    }
+
     tl.play();
   };
 
@@ -568,7 +667,7 @@ function createJewelleryTimeline(config) {
       onComplete: () => {
         tl.pause(0);
         updateLeafOverflow(0);
-        setActiveInfoPiece(null);
+        hideInfoPiecesImmediate();
         setPauseEligibility(false);
         resetTween = null;
       },
@@ -610,7 +709,6 @@ function createJewelleryTimeline(config) {
       { opacity: 0, visibility: "hidden", duration: 0.35, ease: "power2.in" },
       0
     );
-    setActiveInfoPiece(null);
   };
 
   const restartAutoplayFromReset = () => {
@@ -696,11 +794,32 @@ function createJewelleryTimeline(config) {
     );
   };
 
+  const startFreshCycle = () => {
+    stopAuxTweens();
+
+    if (resetTween) {
+      resetTween.kill();
+      resetTween = null;
+    }
+
+    resetCycleState();
+    gsap.set(grid, { rotation: 0, scale: 1, y: 0 });
+    gsap.set(".jewellery", { scale: 1, x: 0, y: 0, rotation: 0 });
+    updateLeafOverflow(0);
+    hideInfoPiecesImmediate();
+
+    if (tl) {
+      tl.kill();
+    }
+
+    buildMainTimeline();
+    tl.pause(0);
+    tl.timeScale(1);
+    tl.restart();
+  };
+
   const playLoop = () => {
     isInView = true;
-    activeHoverCard = null;
-    setPauseEligibility(false);
-    setHoverPhase("top", null);
 
     if (resetTween) {
       resetTween.kill();
@@ -712,19 +831,7 @@ function createJewelleryTimeline(config) {
       return;
     }
 
-    gsap.set(grid, { rotation: 0, scale: 1, y: 0 });
-    gsap.set(".jewellery", { scale: 1, x: 0, y: 0, rotation: 0 });
-    updateLeafOverflow(0);
-
-    gsap.set(".info-set", { opacity: 0, visibility: "hidden" });
-    gsap.set(".info-box--left", { x: -32, opacity: 0 });
-    gsap.set(".info-box--right", { x: 32, opacity: 0 });
-    setActiveInfoPiece(null);
-    setManualPauseUI(false);
-
-    tl.pause(0);
-    tl.invalidate();
-    tl.restart();
+    startFreshCycle();
   };
 
   const getCardSelectorFromElement = (card) => {
@@ -743,6 +850,19 @@ function createJewelleryTimeline(config) {
 
   const getHoverTargetPiece = () => {
     return incomingHighlightPiece || "top";
+  };
+
+  const isFreshCycleStartState = () => {
+    const rotation = normalizeAngle(Number(gsap.getProperty(grid, "rotation")) || 0);
+    const scale = Number(gsap.getProperty(grid, "scale")) || 1;
+    const activeSelector = getActiveCardSelector(rotation);
+
+    return (
+      !activeInfoPiece &&
+      activeSelector === ".top" &&
+      angleDistance(rotation, 0) <= 1 &&
+      Math.abs(scale - 1) <= 0.02
+    );
   };
 
   const getDirectionalPieceState = (piece, direction = 1) => {
@@ -868,18 +988,28 @@ function createJewelleryTimeline(config) {
     }
 
     stopAuxTweens();
+    const flowToken = manualFlowToken;
     tl.timeScale(1);
     setPauseEligibility(false);
     setManualPauseUI(false);
     activeHoverCard = null;
     lastPointer = { x: -1, y: -1 };
+    const shouldHideArrowsForResume = arrowPausePiece === "right";
 
     const currentPiece =
-      activeInfoPiece && pieceOrder.includes(activeInfoPiece) ? activeInfoPiece : "top";
+      arrowPausePiece && pieceOrder.includes(arrowPausePiece)
+        ? arrowPausePiece
+        : settledHighlightPiece && pieceOrder.includes(settledHighlightPiece)
+        ? settledHighlightPiece
+        : activeInfoPiece && pieceOrder.includes(activeInfoPiece)
+          ? activeInfoPiece
+          : "top";
     const currentIndex = pieceOrder.indexOf(currentPiece);
-    const nextIndex = (currentIndex + 1) % pieceOrder.length;
-    const nextPiece = pieceOrder[nextIndex];
+    const nextPiece = getNextPiece(currentPiece);
+    const nextIndex = pieceOrder.indexOf(nextPiece);
     const nextRotation = currentPiece === "right" ? 360 : (currentIndex + 1) * 90;
+    setArrowResumeUI(shouldHideArrowsForResume);
+    arrowPausePiece = null;
 
     const currentState = getTimelinePieceState(currentPiece);
     const nextState = getPieceStateAtRotation(nextPiece, nextRotation);
@@ -892,13 +1022,19 @@ function createJewelleryTimeline(config) {
     tl.pause(piecePauseTimes[currentPiece]);
 
     if (currentPiece === "right") {
-      setActiveInfoPiece("right");
+      showInfoPieceImmediate("right");
       setHoverPhase("top", "right");
       tl.pause(piecePauseTimes.right);
 
       resumeCall = gsap.delayedCall(0.03, () => {
         resumeCall = null;
-        if (!isInView || isTouchPaused || isHoverPaused || isArrowHoverPaused) {
+        if (
+          flowToken !== manualFlowToken ||
+          !isInView ||
+          isTouchPaused ||
+          isHoverPaused ||
+          isArrowHoverPaused
+        ) {
           return;
         }
 
@@ -918,7 +1054,13 @@ function createJewelleryTimeline(config) {
       onComplete: () => {
         navTween = null;
 
-        if (!isInView || isTouchPaused || isHoverPaused || isArrowHoverPaused) {
+        if (
+          flowToken !== manualFlowToken ||
+          !isInView ||
+          isTouchPaused ||
+          isHoverPaused ||
+          isArrowHoverPaused
+        ) {
           return;
         }
 
@@ -929,9 +1071,10 @@ function createJewelleryTimeline(config) {
         gsap.set(".bottomimg", syncedNextState.bottom);
         gsap.set(".rightimg", syncedNextState.right);
 
-        setActiveInfoPiece(nextPiece);
-        setHoverPhase(pieceOrder[(nextIndex + 1) % pieceOrder.length], nextPiece);
-        tl.pause(pieceTimes[nextPiece]);
+        setArrowResumeUI(false);
+        showInfoPieceImmediate(nextPiece);
+        setHoverPhase(getNextPiece(nextPiece), nextPiece);
+        tl.pause(piecePauseTimes[nextPiece]);
         tl.play();
       },
     });
@@ -959,6 +1102,7 @@ function createJewelleryTimeline(config) {
     stopAuxTweens();
     tl.pause();
     tl.timeScale(1);
+    setArrowResumeUI(false);
     if (!isArrowHoverPaused) {
       isHoverPaused = false;
     }
@@ -972,7 +1116,8 @@ function createJewelleryTimeline(config) {
       gsap.set(".leftimg", syncedState.left);
       gsap.set(".bottomimg", syncedState.bottom);
       gsap.set(".rightimg", syncedState.right);
-      setActiveInfoPiece(piece);
+      showInfoPieceImmediate(piece);
+      setHoverPhase(getNextPiece(piece), piece);
       setPauseEligibility(true);
       tl.pause(targetTime);
       setManualPauseUI(isTouchPaused || isHoverPaused || isArrowHoverPaused);
@@ -1027,6 +1172,7 @@ function createJewelleryTimeline(config) {
     if (!isInView || window.matchMedia("(hover: none)").matches || isTouchPaused || isArrowHoverPaused) {
       return;
     }
+    setArrowResumeUI(false);
     const piece = getHoverTargetPiece();
     const targetTime = piecePauseTimes[piece];
 
@@ -1043,6 +1189,7 @@ function createJewelleryTimeline(config) {
     tl.pause();
     isHoverPaused = true;
     isArrowHoverPaused = true;
+    arrowPausePiece = piece;
     activeHoverCard = null;
     setPauseEligibility(false);
     setManualPauseUI(true);
@@ -1066,8 +1213,8 @@ function createJewelleryTimeline(config) {
         gsap.set(".bottomimg", syncedState.bottom);
         gsap.set(".rightimg", syncedState.right);
         tl.pause(targetTime);
-        setActiveInfoPiece(piece);
-        setHoverPhase(pieceOrder[(pieceOrder.indexOf(piece) + 1) % pieceOrder.length], piece);
+        showInfoPieceImmediate(piece);
+        setHoverPhase(getNextPiece(piece), piece);
         setPauseEligibility(true);
       },
     });
@@ -1202,13 +1349,7 @@ function createJewelleryTimeline(config) {
     const piece = selectorToPiece[cardSelector];
 
     if (piece) {
-      gsap.set(".info-set", { opacity: 0, visibility: "hidden" });
-      gsap.set(".info-box--left", { x: -24, opacity: 0 });
-      gsap.set(".info-box--right", { x: 24, opacity: 0 });
-      gsap.set(`.info-set[data-piece="${piece}"]`, { opacity: 1, visibility: "visible" });
-      gsap.set(`.info-set[data-piece="${piece}"] .info-box--left`, { x: 0, opacity: 1 });
-      gsap.set(`.info-set[data-piece="${piece}"] .info-box--right`, { x: 0, opacity: 1 });
-      setActiveInfoPiece(piece);
+      showInfoPieceImmediate(piece);
     }
 
     pauseLoop(true);
