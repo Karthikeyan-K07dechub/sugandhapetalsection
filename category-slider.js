@@ -3,6 +3,7 @@
   if (!section) return;
 
   const viewport = section.querySelector(".category-viewport");
+  const hoverBoundary = viewport;
   const track = section.querySelector(".category-track");
   const slides = gsap.utils.toArray(".category-slide", section);
   const prevBtn = section.querySelector(".cat-nav--prev");
@@ -13,6 +14,45 @@
   let gap = 20;
   let activeSlide = null;
   let isExpanded = false;
+  let hoverLockActive = false;
+
+  function lockHoverUntilPointerLeaves() {
+    hoverLockActive = true;
+  }
+
+  function releaseHoverLock() {
+    hoverLockActive = false;
+  }
+
+  function isHoverLocked() {
+    return hoverLockActive;
+  }
+
+  function collapseIfPointerOutside(clientX, clientY) {
+    const rect = hoverBoundary.getBoundingClientRect();
+    const isInside =
+      clientX >= rect.left &&
+      clientX <= rect.right &&
+      clientY >= rect.top &&
+      clientY <= rect.bottom;
+
+    if (!isInside && hoverLockActive) {
+      releaseHoverLock();
+    }
+
+    if (!isExpanded || window.matchMedia("(hover: none)").matches) return;
+
+    if (!isInside) {
+      collapseAll();
+    }
+  }
+
+  function ensureCollapsedWhenUnhovered() {
+    if (!isExpanded || window.matchMedia("(hover: none)").matches) return;
+    if (!hoverBoundary.matches(":hover")) {
+      collapseAll();
+    }
+  }
 
   function getSlidesPerView() {
     const w = window.innerWidth;
@@ -60,12 +100,23 @@
     slides.forEach((slide) => tween(slide, w));
   }
 
+  function stopContentTweens(slide) {
+    const def = slide.querySelector(".slide-card--default");
+    const exp = slide.querySelector(".slide-card--expanded");
+    const inact = slide.querySelector(".slide-card--inactive");
+    const products = exp.querySelectorAll(".product-card");
+
+    gsap.killTweensOf([def, exp, inact]);
+    gsap.killTweensOf(products);
+  }
+
   function showDefaultContent(slide, animate = true) {
     const def = slide.querySelector(".slide-card--default");
     const exp = slide.querySelector(".slide-card--expanded");
     const inact = slide.querySelector(".slide-card--inactive");
     const dur = animate ? 0.35 : 0;
 
+    stopContentTweens(slide);
     gsap.to(def, { autoAlpha: 1, duration: dur, ease: "power2.out" });
     gsap.to(exp, { autoAlpha: 0, duration: dur * 0.8, ease: "power2.in" });
     gsap.to(inact, { autoAlpha: 0, duration: dur * 0.8, ease: "power2.in" });
@@ -77,6 +128,7 @@
     const inact = slide.querySelector(".slide-card--inactive");
     const products = exp.querySelectorAll(".product-card");
 
+    stopContentTweens(slide);
     gsap.to(def, { autoAlpha: 0, duration: 0.25, ease: "power2.in" });
     gsap.to(inact, { autoAlpha: 0, duration: 0.2, ease: "power2.in" });
     gsap.to(exp, { autoAlpha: 1, duration: 0.4, ease: "power2.out", delay: 0.08 });
@@ -92,23 +144,26 @@
     const exp = slide.querySelector(".slide-card--expanded");
     const inact = slide.querySelector(".slide-card--inactive");
 
+    stopContentTweens(slide);
     gsap.to(def, { autoAlpha: 0, duration: 0.22, ease: "power2.in" });
     gsap.to(exp, { autoAlpha: 0, duration: 0.2, ease: "power2.in" });
     gsap.to(inact, { autoAlpha: 1, duration: 0.35, ease: "power2.out", delay: 0.06 });
   }
 
-  function collapseAll() {
+  function collapseAll(animate = true) {
     isExpanded = false;
     activeSlide = null;
     section.classList.remove("has-active");
-    resetSlideWidths(true);
+    resetSlideWidths(animate);
     slides.forEach((slide) => {
       slide.classList.remove("is-active", "is-inactive");
-      showDefaultContent(slide);
+      showDefaultContent(slide, animate);
     });
   }
 
   function expandSlide(slide) {
+    if (isHoverLocked()) return;
+    if (!hoverBoundary.matches(":hover") && window.matchMedia("(hover: hover)").matches) return;
     if (isExpanded && activeSlide === slide) return;
 
     const visibleStart = currentIndex;
@@ -139,6 +194,7 @@
     slidesPerView = getSlidesPerView();
     gap = parseFloat(getComputedStyle(track).gap) || 20;
     currentIndex = Math.min(currentIndex, maxIndex());
+    releaseHoverLock();
     collapseAll();
     resetSlideWidths(animate);
     setTrackPosition(animate);
@@ -156,7 +212,45 @@
     });
   });
 
-  section.addEventListener("mouseleave", collapseAll);
+  section.addEventListener(
+    "pointerdown",
+    (event) => {
+      const actionLink = event.target.closest(".explore-btn");
+      if (!actionLink) {
+        return;
+      }
+
+      lockHoverUntilPointerLeaves();
+      collapseAll(false);
+    },
+    true
+  );
+
+  section.addEventListener("click", (event) => {
+    const actionLink = event.target.closest(".explore-btn");
+    if (!actionLink) {
+      return;
+    }
+
+    lockHoverUntilPointerLeaves();
+    collapseAll(false);
+  });
+
+  hoverBoundary.addEventListener("mouseleave", () => {
+    releaseHoverLock();
+    requestAnimationFrame(() => {
+      if (!hoverBoundary.matches(":hover")) {
+        collapseAll();
+      }
+    });
+  });
+
+  const handleDocumentMouseMove = (event) => {
+    collapseIfPointerOutside(event.clientX, event.clientY);
+  };
+
+  document.addEventListener("mousemove", handleDocumentMouseMove);
+  gsap.ticker.add(ensureCollapsedWhenUnhovered);
 
   prevBtn.addEventListener("click", () => {
     if (currentIndex > 0) {
