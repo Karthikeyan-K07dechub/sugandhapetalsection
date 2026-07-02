@@ -28,6 +28,9 @@ const HIGHLIGHT_HOLD = 0.95;
 const LOOP_REPEAT_DELAY = 1.85;
 const MANUAL_NAV_DURATION = 1.8;
 const HOVER_SETTLE_DURATION = 1.05;
+const REST_RETURN_DURATION = 1.45;
+const REST_RETURN_DURATION_RANGE = 0.7;
+const REST_INFO_FADE_DURATION = 0.45;
 
 const cardAngles = [
   { selector: ".top", angle: 0 },
@@ -582,6 +585,21 @@ function createJewelleryTimeline(config) {
   };
 
   const animateToRest = () => {
+    const visibleRotation = Number(gsap.getProperty(grid, "rotation")) || 0;
+    let neutralDelta = -normalizeAngle(visibleRotation);
+    if (neutralDelta > 180) {
+      neutralDelta -= 360;
+    }
+    if (neutralDelta < -180) {
+      neutralDelta += 360;
+    }
+
+    const neutralRotation = visibleRotation + neutralDelta;
+    const neutralImageRotation = -neutralRotation;
+    const restRotationDistance = Math.abs(neutralDelta);
+    const restDuration =
+      REST_RETURN_DURATION + (restRotationDistance / 180) * REST_RETURN_DURATION_RANGE;
+
     isInView = false;
     isHoverPaused = false;
     isTouchPaused = false;
@@ -609,11 +627,11 @@ function createJewelleryTimeline(config) {
     });
 
     restTween.to(grid, {
-      rotation: 0,
+      rotation: neutralRotation,
       scale: 1,
       y: 0,
-      duration: 0.9,
-      ease: "power2.out",
+      duration: restDuration,
+      ease: "power2.inOut",
     });
 
     restTween.to(
@@ -622,16 +640,28 @@ function createJewelleryTimeline(config) {
         scale: 1,
         x: 0,
         y: 0,
-        rotation: 0,
-        duration: 0.9,
-        ease: "power2.out",
+        rotation: neutralImageRotation,
+        duration: restDuration,
+        ease: "power2.inOut",
       },
       "<"
     );
 
-    restTween.to(".info-box--right", { x: 24, opacity: 0, duration: 0.35, ease: "power2.in" }, 0);
-    restTween.to(".info-box--left", { x: -24, opacity: 0, duration: 0.35, ease: "power2.in" }, 0);
-    restTween.to(".info-set", { opacity: 0, visibility: "hidden", duration: 0.35, ease: "power2.in" }, 0);
+    restTween.to(
+      ".info-box--right",
+      { x: 24, opacity: 0, duration: REST_INFO_FADE_DURATION, ease: "power2.inOut" },
+      0
+    );
+    restTween.to(
+      ".info-box--left",
+      { x: -24, opacity: 0, duration: REST_INFO_FADE_DURATION, ease: "power2.inOut" },
+      0
+    );
+    restTween.to(
+      ".info-set",
+      { opacity: 0, visibility: "hidden", duration: REST_INFO_FADE_DURATION, ease: "power2.inOut" },
+      0
+    );
   };
 
   const playLoop = () => {
