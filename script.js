@@ -122,6 +122,17 @@ function updateLeafOverflow(rotation) {
       leafinner.style.overflow = active === selector ? "visible" : "hidden";
     }
   });
+
+  cards.forEach((card) => {
+    const isActiveCard =
+      !!active &&
+      ((active === ".top" && card.classList.contains("top")) ||
+        (active === ".left" && card.classList.contains("left")) ||
+        (active === ".bottom" && card.classList.contains("bottom")) ||
+        (active === ".right" && card.classList.contains("right")));
+
+    card.classList.toggle("is-highlighted", isActiveCard);
+  });
 }
 
 function setActiveInfoPiece(piece) {
