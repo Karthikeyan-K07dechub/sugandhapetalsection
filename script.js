@@ -161,10 +161,10 @@ function getMetrics() {
 
   if (vw < 768) {
     return {
-      gridScale: 1.2,
-      gridY: "38vh",
-      imgOffset: size * 0.12,
-      imgScale: 1.35,
+      gridScale: 1.12,
+      gridY: "24vh",
+      imgOffset: size * 0.1,
+      imgScale: 1.22,
     };
   }
 

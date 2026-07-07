@@ -16,6 +16,10 @@
   let isExpanded = false;
   let hoverLockActive = false;
 
+  function usesTapLayout() {
+    return window.innerWidth < 1024 || window.matchMedia("(hover: none)").matches;
+  }
+
   function lockHoverUntilPointerLeaves() {
     hoverLockActive = true;
   }
@@ -163,7 +167,7 @@
 
   function expandSlide(slide) {
     if (isHoverLocked()) return;
-    if (!hoverBoundary.matches(":hover") && window.matchMedia("(hover: hover)").matches) return;
+    if (!usesTapLayout() && !hoverBoundary.matches(":hover") && window.matchMedia("(hover: hover)").matches) return;
     if (isExpanded && activeSlide === slide) return;
 
     const visibleStart = currentIndex;
@@ -202,14 +206,43 @@
     nextBtn.disabled = currentIndex >= maxIndex();
   }
 
+  function handleTapSlideClick(event, slide) {
+    if (!usesTapLayout()) {
+      return;
+    }
+
+    const exploreButton = event.target.closest(".explore-btn");
+    if (exploreButton) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (isExpanded && activeSlide === slide) {
+      collapseAll();
+      return;
+    }
+
+    expandSlide(slide);
+  }
+
+  function handleSlideMouseEnter(slide) {
+    if (usesTapLayout()) {
+      return;
+    }
+
+    expandSlide(slide);
+  }
+
   slides.forEach((slide) => {
-    slide.addEventListener("mouseenter", () => expandSlide(slide));
-    slide.addEventListener("click", () => {
-      if (window.innerWidth < 1024) {
-        if (isExpanded && activeSlide === slide) collapseAll();
-        else expandSlide(slide);
-      }
-    });
+    slide.addEventListener("mouseenter", () => handleSlideMouseEnter(slide));
+    slide.addEventListener("click", (event) => handleTapSlideClick(event, slide));
+  });
+
+  document.addEventListener("pointerdown", (event) => {
+    if (!usesTapLayout() || !isExpanded) return;
+    if (section.contains(event.target)) return;
+    collapseAll();
   });
 
   section.addEventListener(
@@ -219,9 +252,6 @@
       if (!actionLink) {
         return;
       }
-
-      lockHoverUntilPointerLeaves();
-      collapseAll(false);
     },
     true
   );
@@ -231,9 +261,6 @@
     if (!actionLink) {
       return;
     }
-
-    lockHoverUntilPointerLeaves();
-    collapseAll(false);
   });
 
   hoverBoundary.addEventListener("mouseleave", () => {
