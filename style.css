@@ -526,7 +526,7 @@ body {
 
     .info-set {
         /* top: clamp(190px, 54%, 350px); */
-        top: 42%;
+        top: 53%;
         left: 10px;
         right: 10px;
         gap: 8px;
