@@ -330,16 +330,29 @@ body {
 }
 
 @media (max-width: 767px) {
+    .jewellery-section.is-neutral-layout {
+        min-height: 510px;
+    }
+
+    .jewellery-section.is-user-paused .info-box {
+        background: transparent;
+        box-shadow: none;
+    }
+
     .jewellery-section {
-        min-height: auto;
+        min-height: 650px;
     }
 
     .wrapper {
-        min-height: clamp(640px, 100dvh, 760px);
+        min-height: 650px;
         height: auto;
-        padding-top: 20px;
+        padding-top: 18px;
         padding-bottom: 20px;
-        align-items: center;
+        align-items: flex-start;
+    }
+
+    .jewellery-section.is-neutral-layout .wrapper {
+        min-height: 510px;
     }
 
     .grid {
@@ -349,7 +362,7 @@ body {
 
     .info-set {
         /* top: clamp(190px, 54%, 315px); */
-        top:60%;
+        top: 56%;
         left: 12px;
         right: 12px;
         bottom: auto;
@@ -488,19 +501,32 @@ body {
 }
 
 @media (max-width: 479px) {
+    .jewellery-section.is-neutral-layout {
+        min-height: 400px;
+    }
+
+    .jewellery-section {
+        min-height: 620px;
+    }
+
     .wrapper {
         min-height: 620px;
         padding-top: 14px;
         padding-bottom: 16px;
     }
 
+    .jewellery-section.is-neutral-layout .wrapper {
+        min-height: 470px;
+    }
+
     .grid {
         --grid-size: clamp(230px, 68vw, 300px);
-        margin-top: -88px;
+        margin-top: 10px;
     }
 
     .info-set {
         /* top: clamp(190px, 54%, 350px); */
+        top: 42%;
         left: 10px;
         right: 10px;
         gap: 8px;

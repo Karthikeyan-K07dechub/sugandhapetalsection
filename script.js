@@ -27,6 +27,7 @@ const STEP_DURATION = 2.1;
 const HIGHLIGHT_HOLD = 0.95;
 const LOOP_REPEAT_DELAY = 1.85;
 const MANUAL_NAV_DURATION = 1.8;
+const MANUAL_ARROW_PAUSE_DELAY = 5;
 const HOVER_SETTLE_DURATION = 1.05;
 const REST_RETURN_DURATION = 1.45;
 const REST_RETURN_DURATION_RANGE = 0.7;
@@ -201,22 +202,28 @@ function createJewelleryTimeline(config) {
   let activeTween = null;
   let autoAdvanceCall = null;
   let neutralResumeCall = null;
+  let manualArrowResumeCall = null;
   let neutralReadyAt = null;
   let restTween = null;
   let isInView = false;
   let isHoverPaused = false;
   let isTouchPaused = false;
   let isArrowHovered = false;
+  let isArrowTemporarilyPaused = false;
   let isNeutralState = true;
 
   const getPieceName = (index) => pieceOrder[(index + pieceOrder.length) % pieceOrder.length];
+
+  const setNeutralLayout = (isNeutral) => {
+    section.classList.toggle("is-neutral-layout", isNeutral);
+  };
 
   const setManualPauseUI = (isPaused) => {
     section.classList.toggle("is-user-paused", isPaused);
   };
 
   const refreshPauseUI = () => {
-    setManualPauseUI(isHoverPaused || isTouchPaused || isArrowHovered);
+    setManualPauseUI(isHoverPaused || isTouchPaused || isArrowHovered || isArrowTemporarilyPaused);
   };
 
   const clearAutoAdvance = () => {
@@ -230,6 +237,13 @@ function createJewelleryTimeline(config) {
     if (neutralResumeCall) {
       neutralResumeCall.kill();
       neutralResumeCall = null;
+    }
+  };
+
+  const clearManualArrowResume = () => {
+    if (manualArrowResumeCall) {
+      manualArrowResumeCall.kill();
+      manualArrowResumeCall = null;
     }
   };
 
@@ -250,6 +264,7 @@ function createJewelleryTimeline(config) {
   const stopAllMotion = () => {
     clearAutoAdvance();
     clearNeutralResume();
+    clearManualArrowResume();
     clearActiveTween();
     clearRestTween();
   };
@@ -307,6 +322,7 @@ function createJewelleryTimeline(config) {
     pendingIndex = null;
     pendingRotation = null;
     isNeutralState = false;
+    setNeutralLayout(false);
     neutralReadyAt = null;
     clearNeutralResume();
     applyPieceState(index, rotation);
@@ -314,7 +330,14 @@ function createJewelleryTimeline(config) {
   };
 
   const startTopHighlightFromNeutral = () => {
-    if (!isInView || !isNeutralState || isTouchPaused || isHoverPaused || isArrowHovered) {
+    if (
+      !isInView ||
+      !isNeutralState ||
+      isTouchPaused ||
+      isHoverPaused ||
+      isArrowHovered ||
+      isArrowTemporarilyPaused
+    ) {
       return false;
     }
 
@@ -364,7 +387,7 @@ function createJewelleryTimeline(config) {
       return;
     }
 
-    if (!isInView || isTouchPaused || isHoverPaused || isArrowHovered) {
+    if (!isInView || isTouchPaused || isHoverPaused || isArrowHovered || isArrowTemporarilyPaused) {
       return;
     }
 
@@ -406,6 +429,7 @@ function createJewelleryTimeline(config) {
     const state = getPieceState(targetPiece, targetRotation);
 
     clearActiveTween();
+    setNeutralLayout(false);
     pendingIndex = index;
     pendingRotation = targetRotation;
 
@@ -418,7 +442,14 @@ function createJewelleryTimeline(config) {
         activeTween = null;
         finalizePiece(index, targetRotation);
 
-        if (autoDelay !== null && isInView && !isHoverPaused && !isTouchPaused && !isArrowHovered) {
+        if (
+          autoDelay !== null &&
+          isInView &&
+          !isHoverPaused &&
+          !isTouchPaused &&
+          !isArrowHovered &&
+          !isArrowTemporarilyPaused
+        ) {
           scheduleAutoAdvance(autoDelay);
         }
       },
@@ -489,6 +520,7 @@ function createJewelleryTimeline(config) {
         currentIndex = 0;
         rawRotation = 0;
         isNeutralState = true;
+        setNeutralLayout(true);
         isHoverPaused = false;
         gsap.set(grid, { rotation: 0, scale: 1, y: 0 });
         gsap.set(".jewellery", { scale: 1, x: 0, y: 0, rotation: 0 });
@@ -529,14 +561,14 @@ function createJewelleryTimeline(config) {
   const scheduleAutoAdvance = (delay = HIGHLIGHT_HOLD) => {
     clearAutoAdvance();
 
-    if (!isInView || isHoverPaused || isTouchPaused || isArrowHovered) {
+    if (!isInView || isHoverPaused || isTouchPaused || isArrowHovered || isArrowTemporarilyPaused) {
       return;
     }
 
     autoAdvanceCall = gsap.delayedCall(delay, () => {
       autoAdvanceCall = null;
 
-      if (!isInView || isHoverPaused || isTouchPaused || isArrowHovered) {
+      if (!isInView || isHoverPaused || isTouchPaused || isArrowHovered || isArrowTemporarilyPaused) {
         return;
       }
 
@@ -557,6 +589,7 @@ function createJewelleryTimeline(config) {
   const pauseAutoplay = () => {
     clearAutoAdvance();
     clearNeutralResume();
+    clearManualArrowResume();
     if (pendingIndex !== null) {
       settleToResolvedPiece();
     }
@@ -564,7 +597,7 @@ function createJewelleryTimeline(config) {
   };
 
   const resumeAutoplay = (delay = HIGHLIGHT_HOLD) => {
-    if (!isInView || isTouchPaused || isHoverPaused || isArrowHovered) {
+    if (!isInView || isTouchPaused || isHoverPaused || isArrowHovered || isArrowTemporarilyPaused) {
       refreshPauseUI();
       return;
     }
@@ -604,6 +637,7 @@ function createJewelleryTimeline(config) {
     isHoverPaused = false;
     isTouchPaused = false;
     isArrowHovered = false;
+    isArrowTemporarilyPaused = false;
     isNeutralState = true;
     currentIndex = 0;
     rawRotation = 0;
@@ -619,6 +653,7 @@ function createJewelleryTimeline(config) {
       },
       onComplete: () => {
         restTween = null;
+        setNeutralLayout(true);
         gsap.set(grid, { rotation: 0, scale: 1, y: 0 });
         gsap.set(".jewellery", { scale: 1, x: 0, y: 0, rotation: 0 });
         updateLeafOverflow(0);
@@ -673,6 +708,7 @@ function createJewelleryTimeline(config) {
     if (pendingIndex !== null && pendingRotation !== null) {
       finalizePiece(pendingIndex, pendingRotation);
     } else if (isNeutralState) {
+      setNeutralLayout(true);
       isHoverPaused = false;
       gsap.set(grid, { rotation: 0, scale: 1, y: 0 });
       gsap.set(".jewellery", { scale: 1, x: 0, y: 0, rotation: 0 });
@@ -685,7 +721,7 @@ function createJewelleryTimeline(config) {
 
     refreshPauseUI();
 
-    if (!isTouchPaused && !isHoverPaused && !isArrowHovered) {
+    if (!isTouchPaused && !isHoverPaused && !isArrowHovered && !isArrowTemporarilyPaused) {
       if (isNeutralState) {
         if (!resumeNeutralSequence()) {
           startTopHighlightFromNeutral();
@@ -776,20 +812,40 @@ function createJewelleryTimeline(config) {
   const isPointerOverAnyArrow = () =>
     [...prevButtons, ...nextButtons].some((button) => button.matches(":hover"));
 
+  const usesTimedArrowResume = () =>
+    window.innerWidth < 1024 || window.matchMedia("(hover: none)").matches;
+
   const stepPiece = (direction) => {
     const baseIndex = pendingIndex !== null ? pendingIndex : currentIndex;
     const nextIndex = (baseIndex + direction + pieceOrder.length) % pieceOrder.length;
-    const shouldKeepArrowHover = isPointerOverAnyArrow();
+    const shouldUseTimedResume = usesTimedArrowResume();
+    const shouldKeepArrowHover = shouldUseTimedResume ? false : isPointerOverAnyArrow();
 
+    clearManualArrowResume();
+    clearAutoAdvance();
+    isTouchPaused = false;
     isHoverPaused = false;
     isArrowHovered = shouldKeepArrowHover;
+    isArrowTemporarilyPaused = shouldUseTimedResume;
     refreshPauseUI();
 
     animateToIndex(nextIndex, {
       direction,
       duration: MANUAL_NAV_DURATION,
-      autoDelay: 1.2,
+      autoDelay: shouldUseTimedResume ? null : 1.2,
       forcePending: pendingIndex !== null,
+    });
+
+    if (!shouldUseTimedResume) {
+      return;
+    }
+
+    manualArrowResumeCall = gsap.delayedCall(MANUAL_ARROW_PAUSE_DELAY, () => {
+      manualArrowResumeCall = null;
+      isArrowHovered = false;
+      isArrowTemporarilyPaused = false;
+      refreshPauseUI();
+      resumeAutoplay();
     });
   };
 
@@ -832,6 +888,7 @@ function createJewelleryTimeline(config) {
   updateLeafOverflow(0);
   hideInfoPiecesImmediate();
   isNeutralState = true;
+  setNeutralLayout(true);
 
   section.addEventListener("mousemove", handlePointerMove);
   section.addEventListener("mouseleave", handleSectionMouseLeave);
