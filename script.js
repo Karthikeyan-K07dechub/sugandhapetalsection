@@ -9,18 +9,6 @@
   const prevButtons = Array.from(document.querySelectorAll(".jewel-control--prev"));
   const nextButtons = Array.from(document.querySelectorAll(".jewel-control--next"));
   const pieceOrder = ["top", "left", "bottom", "right"];
-  const userAgent = window.navigator.userAgent || "";
-  const vendor = window.navigator.vendor || "";
-  const isAppleTouchDevice =
-    /iP(ad|hone|od)/.test(userAgent) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const isLikelySafari =
-    /Safari/i.test(userAgent) && /Apple/i.test(vendor) && !/CriOS|FxiOS|EdgiOS/i.test(userAgent);
-  const isIOSSafari = isAppleTouchDevice && isLikelySafari;
-
-  if (isIOSSafari) {
-    section.classList.add("is-ios-safari");
-  }
 
   function setFallbackPiece(piece) {
     infoSets.forEach((el) => {
@@ -202,7 +190,7 @@
     cardAngles.forEach(({ selector }) => {
       const leafinner = leafMap[selector];
       if (leafinner) {
-        leafinner.style.overflow = isIOSSafari ? "visible" : active === selector ? "visible" : "hidden";
+        leafinner.style.overflow = active === selector ? "visible" : "hidden";
       }
     });
 

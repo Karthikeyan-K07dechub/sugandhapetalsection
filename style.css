@@ -40,9 +40,6 @@ body {
     pointer-events: none;
     user-select: none;
     -webkit-user-select: none;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform-style: preserve-3d;
 }
 
 .leafinner {
@@ -52,9 +49,6 @@ body {
     justify-content: center;
     align-items: center;
     pointer-events: none;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform-style: preserve-3d;
 }
 
 .top .leaf {
@@ -318,10 +312,6 @@ body {
     user-select: none;
     -webkit-user-select: none;
     -webkit-user-drag: none;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
-    will-change: transform;
 }
 
 .card {
@@ -331,13 +321,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-}
-
-.jewellery-section.is-ios-safari .leafinner,
-.jewellery-section.is-ios-safari .jewellery {
-    transform: translateZ(0);
 }
 
 @media (hover: hover) {
@@ -439,10 +422,6 @@ body {
         opacity: 1;
         z-index: 24;
         filter: saturate(1.08);
-    }
-
-    .jewellery-section.is-ios-safari .card.is-highlighted {
-        filter: none;
     }
 
     .card.is-highlighted .leaf {
@@ -671,10 +650,6 @@ body {
 
     .card.is-highlighted {
         filter: saturate(1.12);
-    }
-
-    .jewellery-section.is-ios-safari .card.is-highlighted {
-        filter: none;
     }
 
     .card.top.is-highlighted {
