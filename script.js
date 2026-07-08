@@ -49,13 +49,16 @@ const selectorToPiece = {
 
 const pieceOrder = ["top", "left", "bottom", "right"];
 
-const leafMap = Object.fromEntries(
-  cardAngles.map(({ selector }) => [selector, document.querySelector(`${selector} .leaf`)])
-);
+function createSelectorMap(className) {
+  const map = {};
+  cardAngles.forEach(({ selector }) => {
+    map[selector] = document.querySelector(`${selector} ${className}`);
+  });
+  return map;
+}
 
-const imageMap = Object.fromEntries(
-  cardAngles.map(({ selector }) => [selector, document.querySelector(`${selector} .jewellery`)])
-);
+const leafMap = createSelectorMap(".leaf");
+const imageMap = createSelectorMap(".jewellery");
 
 let activeLeafSelector = null;
 let activeInfoPiece = null;
@@ -177,6 +180,8 @@ function getMetrics() {
       gridY: "24vh",
       imgOffset: size * 0.1,
       imgScale: 1.22,
+      necklaceScaleBoost: 1.42,
+      slimNecklaceScaleBoost: 1.72,
     };
   }
 
@@ -186,6 +191,8 @@ function getMetrics() {
       gridY: "48vh",
       imgOffset: size * 0.14,
       imgScale: 1.7,
+      necklaceScaleBoost: 1.38,
+      slimNecklaceScaleBoost: 1.62,
     };
   }
 
@@ -194,16 +201,25 @@ function getMetrics() {
     gridY: "53vh",
     imgOffset: size * 0.155,
     imgScale: 2,
+    necklaceScaleBoost: 1.34,
+    slimNecklaceScaleBoost: 1.56,
   };
 }
 
 function createJewelleryTimeline(config) {
-  const { gridScale, gridY, imgOffset, imgScale } = config;
+  const { gridScale, gridY, imgOffset, imgScale, necklaceScaleBoost, slimNecklaceScaleBoost } = config;
   const pieceToSelector = {
     top: ".top",
     left: ".left",
     bottom: ".bottom",
     right: ".right",
+  };
+  const pieceScaleMap = {
+    top: imgScale * necklaceScaleBoost,
+    left: imgScale * necklaceScaleBoost,
+    bottom: imgScale,
+    // FragrantHeritage is visually slimmer, so it needs extra scale to match the other necklaces.
+    right: imgScale * slimNecklaceScaleBoost,
   };
 
   let currentIndex = 0;
@@ -290,25 +306,25 @@ function createJewelleryTimeline(config) {
         y: gridY,
       },
       top: {
-        scale: piece === "top" ? imgScale : 1,
+        scale: piece === "top" ? pieceScaleMap.top : 1,
         x: 0,
         y: piece === "top" ? -imgOffset : 0,
         rotation: imageRotation,
       },
       left: {
-        scale: piece === "left" ? imgScale : 1,
+        scale: piece === "left" ? pieceScaleMap.left : 1,
         x: piece === "left" ? -imgOffset : 0,
         y: 0,
         rotation: imageRotation,
       },
       bottom: {
-        scale: piece === "bottom" ? imgScale : 1,
+        scale: piece === "bottom" ? pieceScaleMap.bottom : 1,
         x: 0,
         y: piece === "bottom" ? imgOffset : 0,
         rotation: imageRotation,
       },
       right: {
-        scale: piece === "right" ? imgScale : 1,
+        scale: piece === "right" ? pieceScaleMap.right : 1,
         x: piece === "right" ? imgOffset : 0,
         y: 0,
         rotation: imageRotation,

@@ -384,19 +384,19 @@ body {
     }
 
     .card.top.is-highlighted {
-        transform: translate(-50%, 0) scale(1.08);
+        transform: translate(-50%, 0);
     }
 
     .card.left.is-highlighted {
-        transform: translate(0, -50%) scale(1.08);
+        transform: translate(0, -50%);
     }
 
     .card.right.is-highlighted {
-        transform: translate(0, -50%) scale(1.08);
+        transform: translate(0, -50%);
     }
 
     .card.bottom.is-highlighted {
-        transform: translate(-50%, 0) scale(1.08);
+        transform: translate(-50%, 0);
     }
 
     .jewellery-section.is-neutral-layout .card {
@@ -593,19 +593,19 @@ body {
     }
 
     .card.top.is-highlighted {
-        transform: translate(-50%, 0) scale(1.12);
+        transform: translate(-50%, 0);
     }
 
     .card.left.is-highlighted {
-        transform: translate(0, -50%) scale(1.12);
+        transform: translate(0, -50%);
     }
 
     .card.right.is-highlighted {
-        transform: translate(0, -50%) scale(1.12);
+        transform: translate(0, -50%);
     }
 
     .card.bottom.is-highlighted {
-        transform: translate(-50%, 0) scale(1.12);
+        transform: translate(-50%, 0);
     }
 
     .jewellery-section.is-neutral-layout .card.is-highlighted {

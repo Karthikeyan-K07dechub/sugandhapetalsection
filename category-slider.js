@@ -239,22 +239,15 @@
     slide.addEventListener("click", (event) => handleTapSlideClick(event, slide));
   });
 
-  document.addEventListener("pointerdown", (event) => {
+  const handleDocumentPress = (event) => {
     if (!usesTapLayout() || !isExpanded) return;
     if (section.contains(event.target)) return;
     collapseAll();
-  });
+  };
 
-  section.addEventListener(
-    "pointerdown",
-    (event) => {
-      const actionLink = event.target.closest(".explore-btn");
-      if (!actionLink) {
-        return;
-      }
-    },
-    true
-  );
+  ["pointerdown", "touchstart", "mousedown"].forEach((eventName) => {
+    document.addEventListener(eventName, handleDocumentPress);
+  });
 
   section.addEventListener("click", (event) => {
     const actionLink = event.target.closest(".explore-btn");
