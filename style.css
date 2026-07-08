@@ -645,7 +645,7 @@ body {
     .grid {
         --grid-size: clamp(230px, 68vw, 300px);
         /* margin-top: 15px; */
-        margin-top: 12px;
+        margin-top: 8px;
     }
 
     .card.is-highlighted {
