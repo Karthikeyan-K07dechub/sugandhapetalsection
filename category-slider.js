@@ -1,4 +1,7 @@
 (function initCategorySlider() {
+  if (typeof window.gsap === "undefined") return;
+
+  const gsap = window.gsap;
   const section = document.querySelector(".category-section");
   if (!section) return;
 
