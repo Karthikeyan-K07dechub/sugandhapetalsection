@@ -186,20 +186,35 @@
     );
   }
 
-  function updateLeafOverflow(rotation, preferredSelector = null) {
+  function updateLeafOverflow(rotation, preferredSelector = null, preserveSelector = null) {
     const active = getActiveCardSelector(rotation);
     const visibleSelector = preferredSelector || active;
+    const visibleOverflowSelectors = new Set();
 
-    if (activeLeafSelector === visibleSelector) {
+    if (active) {
+      visibleOverflowSelectors.add(active);
+    }
+
+    if (preferredSelector) {
+      visibleOverflowSelectors.add(preferredSelector);
+    }
+
+    if (preserveSelector) {
+      visibleOverflowSelectors.add(preserveSelector);
+    }
+
+    const visibleOverflowKey = Array.from(visibleOverflowSelectors).sort().join("|");
+
+    if (activeLeafSelector === visibleOverflowKey) {
       return;
     }
 
-    activeLeafSelector = visibleSelector;
+    activeLeafSelector = visibleOverflowKey;
 
     cardAngles.forEach(({ selector }) => {
       const leafinner = leafMap[selector];
       if (leafinner) {
-        leafinner.style.overflow = visibleSelector === selector ? "visible" : "hidden";
+        leafinner.style.overflow = visibleOverflowSelectors.has(selector) ? "visible" : "hidden";
       }
     });
 
@@ -540,7 +555,11 @@
       activeTween = gsap.timeline({
         defaults: { duration, ease },
         onUpdate: () => {
-          updateLeafOverflow(gsap.getProperty(grid, "rotation"), `.${targetPiece}`);
+          updateLeafOverflow(
+            gsap.getProperty(grid, "rotation"),
+            `.${targetPiece}`,
+            isIOSWebKit ? `.${getPieceName(currentIndex)}` : null
+          );
         },
         onComplete: () => {
           activeTween = null;
@@ -583,7 +602,11 @@
       activeTween = gsap.timeline({
         defaults: { duration, ease: "power2.inOut" },
         onUpdate: () => {
-          updateLeafOverflow(gsap.getProperty(grid, "rotation"), `.${targetPiece}`);
+          updateLeafOverflow(
+            gsap.getProperty(grid, "rotation"),
+            `.${targetPiece}`,
+            isIOSWebKit ? `.${getPieceName(currentIndex)}` : null
+          );
         },
         onComplete: () => {
           activeTween = null;
