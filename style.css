@@ -29,7 +29,6 @@ body {
 }
 
 .leaf {
-    --leaf-scale: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -53,7 +52,7 @@ body {
 }
 
 .top .leaf {
-    transform: rotate(45deg) scale(var(--leaf-scale));
+    transform: rotate(45deg);
 }
 
 .top .leafinner {
@@ -61,7 +60,7 @@ body {
 }
 
 .left .leaf {
-    transform: rotate(-45deg) scale(var(--leaf-scale));
+    transform: rotate(-45deg);
 }
 
 .left .leafinner {
@@ -69,7 +68,7 @@ body {
 }
 
 .right .leaf {
-    transform: rotate(135deg) scale(var(--leaf-scale));
+    transform: rotate(135deg);
 }
 
 .right .leafinner {
@@ -77,7 +76,7 @@ body {
 }
 
 .bottom .leaf {
-    transform: rotate(-135deg) scale(var(--leaf-scale));
+    transform: rotate(-135deg);
 }
 
 .bottom .leafinner {
@@ -246,22 +245,6 @@ body {
     transform: translateY(0);
 }
 
-.jewellery-section.is-fallback .info-set {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.jewellery-section.is-fallback .info-set.is-active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.jewellery-section.is-fallback .info-box--left,
-.jewellery-section.is-fallback .info-box--right {
-    opacity: 1;
-    transform: none;
-}
-
 .info-set.is-nav-hidden .info-nav {
     opacity: 0;
     visibility: hidden;
@@ -397,7 +380,6 @@ body {
     }
 
     .card.is-highlighted .leaf {
-        --leaf-scale: 1.1;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
     }
 
@@ -610,10 +592,6 @@ body {
         filter: saturate(1.12);
     }
 
-    .card.is-highlighted .leaf {
-        --leaf-scale: 1.08;
-    }
-
     .card.top.is-highlighted {
         transform: translate(-50%, 0);
     }
@@ -636,7 +614,7 @@ body {
 
     .info-set {
         /* top: clamp(190px, 54%, 350px); */
-        top: 55%;
+        top: 57%;
         left: 10px;
         right: 10px;
         gap: 8px;
@@ -687,11 +665,6 @@ body {
 @media (min-width: 768px) and (max-width: 1023px) {
     .grid {
         --grid-size: min(645px, 72vmin);
-    }
-
-    .card.is-highlighted .leaf {
-        --leaf-scale: 1.09;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
     }
 
     .info-cluster {
