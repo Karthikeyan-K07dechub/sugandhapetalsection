@@ -56,7 +56,7 @@
   }
 
   function shouldUseSimpleMobileMode() {
-    return window.innerWidth < 1024 || window.matchMedia("(hover: none)").matches;
+    return false;
   }
 
   if (shouldUseSimpleMobileMode()) {
@@ -246,8 +246,9 @@
       return {
         gridScale: 1.12,
         gridY: "24vh",
-        imgOffset: size * 0.1,
-        imgScale: 1.22,
+        imgOffset: size * 0.2,
+        // imgScale: 1.22,
+        imgScale: 1.57,
         necklaceScaleBoost: 1.28,
         slimNecklaceScaleBoost: 1.4,
       };
@@ -266,7 +267,7 @@
 
     return {
       gridScale: 1.6,
-      gridY: "53vh",
+      gridY: "62vh",
       imgOffset: size * 0.155,
       imgScale: 2,
       necklaceScaleBoost: 1,
