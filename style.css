@@ -673,7 +673,7 @@ body {
 
     .info-set {
         /* top: clamp(190px, 54%, 350px); */
-        top: 56%;
+        top: 65%;
         left: 10px;
         right: 10px;
         gap: 8px;
