@@ -23,6 +23,16 @@
     return window.innerWidth < 1024 || window.matchMedia("(hover: none)").matches;
   }
 
+  function isFanMobileLayout() {
+    return window.innerWidth <= 479;
+  }
+
+  function getWrappedIndex(index) {
+    const total = slides.length;
+    if (!total) return 0;
+    return (index % total + total) % total;
+  }
+
   function lockHoverUntilPointerLeaves() {
     hoverLockActive = true;
   }
@@ -55,7 +65,7 @@
   }
 
   function ensureCollapsedWhenUnhovered() {
-    if (!isExpanded || window.matchMedia("(hover: none)").matches) return;
+    if (!isExpanded || window.matchMedia("(hover: none)").matches || isFanMobileLayout()) return;
     if (!hoverBoundary.matches(":hover")) {
       collapseAll();
     }
@@ -90,6 +100,11 @@
   }
 
   function setTrackPosition(animate = true) {
+    if (isFanMobileLayout()) {
+      gsap.set(track, { x: 0 });
+      return;
+    }
+
     const offset = currentIndex * (getSlideWidth() + gap);
     if (animate) {
       gsap.to(track, { x: -offset, duration: 0.65, ease: "power3.inOut" });
@@ -99,6 +114,11 @@
   }
 
   function resetSlideWidths(animate = true) {
+    if (isFanMobileLayout()) {
+      slides.forEach((slide) => gsap.set(slide, { clearProps: "width" }));
+      return;
+    }
+
     const w = getSlideWidth();
     const tween = animate
       ? (el, val) => gsap.to(el, { width: val, duration: 0.55, ease: "power3.inOut" })
@@ -157,10 +177,67 @@
     gsap.to(inact, { autoAlpha: 1, duration: 0.35, ease: "power2.out", delay: 0.06 });
   }
 
+  function resetFanMobileClasses() {
+    section.classList.remove("is-fan-mobile");
+    slides.forEach((slide) => {
+      slide.classList.remove("is-left", "is-right", "is-center", "is-hidden", "is-open");
+    });
+  }
+
+  function renderFanMobile(animate = true) {
+    if (!slides.length) return;
+
+    section.classList.add("is-fan-mobile");
+    currentIndex = getWrappedIndex(currentIndex);
+
+    const centerSlide = slides[currentIndex];
+    const leftIndex = slides.length > 2 ? getWrappedIndex(currentIndex - 1) : -1;
+    const rightIndex = slides.length > 1 ? getWrappedIndex(currentIndex + 1) : -1;
+
+    gsap.set(track, { x: 0 });
+
+    slides.forEach((slide, index) => {
+      slide.classList.remove("is-active", "is-inactive", "is-left", "is-right", "is-center", "is-hidden", "is-open");
+      gsap.set(slide, { clearProps: "width" });
+
+      if (index === currentIndex) {
+        slide.classList.add("is-center");
+        if (isExpanded) {
+          slide.classList.add("is-open");
+          showExpandedContent(slide);
+        } else {
+          showDefaultContent(slide, animate);
+        }
+        return;
+      }
+
+      showDefaultContent(slide, animate);
+
+      if (!isExpanded && index === leftIndex) {
+        slide.classList.add("is-left");
+      } else if (!isExpanded && index === rightIndex) {
+        slide.classList.add("is-right");
+      } else {
+        slide.classList.add("is-hidden");
+      }
+    });
+
+    activeSlide = isExpanded ? centerSlide : null;
+    prevBtn.disabled = false;
+    nextBtn.disabled = false;
+  }
+
   function collapseAll(animate = true) {
     isExpanded = false;
     activeSlide = null;
     section.classList.remove("has-active");
+
+    if (isFanMobileLayout()) {
+      renderFanMobile(animate);
+      return;
+    }
+
+    resetFanMobileClasses();
     resetSlideWidths(animate);
     slides.forEach((slide) => {
       slide.classList.remove("is-active", "is-inactive");
@@ -169,6 +246,15 @@
   }
 
   function expandSlide(slide) {
+    if (isFanMobileLayout()) {
+      currentIndex = slides.indexOf(slide);
+      isExpanded = true;
+      activeSlide = slide;
+      section.classList.add("has-active");
+      renderFanMobile(true);
+      return;
+    }
+
     if (isHoverLocked()) return;
     if (!usesTapLayout() && !hoverBoundary.matches(":hover") && window.matchMedia("(hover: hover)").matches) return;
     if (isExpanded && activeSlide === slide) return;
@@ -200,8 +286,15 @@
   function refreshLayout(animate = false) {
     slidesPerView = getSlidesPerView();
     gap = parseFloat(getComputedStyle(track).gap) || 20;
-    currentIndex = Math.min(currentIndex, maxIndex());
     releaseHoverLock();
+
+    if (isFanMobileLayout()) {
+      renderFanMobile(animate);
+      return;
+    }
+
+    currentIndex = Math.min(currentIndex, maxIndex());
+    resetFanMobileClasses();
     collapseAll();
     resetSlideWidths(animate);
     setTrackPosition(animate);
@@ -221,6 +314,20 @@
 
     event.preventDefault();
 
+    if (isFanMobileLayout()) {
+      const slideIndex = slides.indexOf(slide);
+      const centerIndex = getWrappedIndex(currentIndex);
+      const isCenterSlide = slideIndex === centerIndex;
+
+      if (isCenterSlide && isExpanded && activeSlide === slide) {
+        collapseAll();
+        return;
+      }
+
+      expandSlide(slide);
+      return;
+    }
+
     if (isExpanded && activeSlide === slide) {
       collapseAll();
       return;
@@ -230,7 +337,7 @@
   }
 
   function handleSlideMouseEnter(slide) {
-    if (usesTapLayout()) {
+    if (usesTapLayout() || isFanMobileLayout()) {
       return;
     }
 
@@ -260,6 +367,10 @@
   });
 
   hoverBoundary.addEventListener("mouseleave", () => {
+    if (isFanMobileLayout()) {
+      return;
+    }
+
     releaseHoverLock();
     requestAnimationFrame(() => {
       if (!hoverBoundary.matches(":hover")) {
@@ -269,6 +380,9 @@
   });
 
   const handleDocumentMouseMove = (event) => {
+    if (isFanMobileLayout()) {
+      return;
+    }
     collapseIfPointerOutside(event.clientX, event.clientY);
   };
 
@@ -276,6 +390,16 @@
   gsap.ticker.add(ensureCollapsedWhenUnhovered);
 
   prevBtn.addEventListener("click", () => {
+    if (isFanMobileLayout()) {
+      currentIndex = getWrappedIndex(currentIndex - 1);
+      if (isExpanded) {
+        activeSlide = slides[currentIndex];
+        section.classList.add("has-active");
+      }
+      renderFanMobile(true);
+      return;
+    }
+
     if (currentIndex > 0) {
       currentIndex--;
       collapseAll();
@@ -286,6 +410,16 @@
   });
 
   nextBtn.addEventListener("click", () => {
+    if (isFanMobileLayout()) {
+      currentIndex = getWrappedIndex(currentIndex + 1);
+      if (isExpanded) {
+        activeSlide = slides[currentIndex];
+        section.classList.add("has-active");
+      }
+      renderFanMobile(true);
+      return;
+    }
+
     if (currentIndex < maxIndex()) {
       currentIndex++;
       collapseAll();
