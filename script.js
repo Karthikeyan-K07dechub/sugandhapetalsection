@@ -246,7 +246,7 @@
       return {
         gridScale: 1.12,
         gridY: "24vh",
-        imgOffset: size * 0.3,
+        imgOffset: size * 0.2,
         // imgScale: 1.22,
         imgScale: 1.57,
         necklaceScaleBoost: 1.28,
