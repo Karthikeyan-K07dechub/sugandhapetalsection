@@ -9,6 +9,14 @@
   const prevButtons = Array.from(document.querySelectorAll(".jewel-control--prev"));
   const nextButtons = Array.from(document.querySelectorAll(".jewel-control--next"));
   const pieceOrder = ["top", "left", "bottom", "right"];
+  const userAgent = window.navigator.userAgent || "";
+  const isIOSWebKit =
+    /iP(ad|hone|od)/.test(userAgent) ||
+    (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
+
+  if (isIOSWebKit) {
+    section.classList.add("is-ios-webkit");
+  }
 
   function setFallbackPiece(piece) {
     infoSets.forEach((el) => {
@@ -178,29 +186,30 @@
     );
   }
 
-  function updateLeafOverflow(rotation) {
+  function updateLeafOverflow(rotation, preferredSelector = null) {
     const active = getActiveCardSelector(rotation);
+    const visibleSelector = preferredSelector || active;
 
-    if (activeLeafSelector === active) {
+    if (activeLeafSelector === visibleSelector) {
       return;
     }
 
-    activeLeafSelector = active;
+    activeLeafSelector = visibleSelector;
 
     cardAngles.forEach(({ selector }) => {
       const leafinner = leafMap[selector];
       if (leafinner) {
-        leafinner.style.overflow = active === selector ? "visible" : "hidden";
+        leafinner.style.overflow = visibleSelector === selector ? "visible" : "hidden";
       }
     });
 
     cards.forEach((card) => {
       const isActiveCard =
-        !!active &&
-        ((active === ".top" && card.classList.contains("top")) ||
-          (active === ".left" && card.classList.contains("left")) ||
-          (active === ".bottom" && card.classList.contains("bottom")) ||
-          (active === ".right" && card.classList.contains("right")));
+        !!visibleSelector &&
+        ((visibleSelector === ".top" && card.classList.contains("top")) ||
+          (visibleSelector === ".left" && card.classList.contains("left")) ||
+          (visibleSelector === ".bottom" && card.classList.contains("bottom")) ||
+          (visibleSelector === ".right" && card.classList.contains("right")));
 
       card.classList.toggle("is-highlighted", isActiveCard);
     });
@@ -531,7 +540,7 @@
       activeTween = gsap.timeline({
         defaults: { duration, ease },
         onUpdate: () => {
-          updateLeafOverflow(gsap.getProperty(grid, "rotation"));
+          updateLeafOverflow(gsap.getProperty(grid, "rotation"), `.${targetPiece}`);
         },
         onComplete: () => {
           activeTween = null;
@@ -574,7 +583,7 @@
       activeTween = gsap.timeline({
         defaults: { duration, ease: "power2.inOut" },
         onUpdate: () => {
-          updateLeafOverflow(gsap.getProperty(grid, "rotation"));
+          updateLeafOverflow(gsap.getProperty(grid, "rotation"), `.${targetPiece}`);
         },
         onComplete: () => {
           activeTween = null;

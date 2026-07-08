@@ -424,6 +424,10 @@ body {
         filter: saturate(1.08);
     }
 
+    .jewellery-section.is-ios-webkit .card.is-highlighted {
+        filter: none;
+    }
+
     .card.is-highlighted .leaf {
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
     }
@@ -650,6 +654,10 @@ body {
 
     .card.is-highlighted {
         filter: saturate(1.12);
+    }
+
+    .jewellery-section.is-ios-webkit .card.is-highlighted {
+        filter: none;
     }
 
     .card.top.is-highlighted {
