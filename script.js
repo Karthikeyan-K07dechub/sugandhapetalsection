@@ -55,6 +55,15 @@
     syncFallback();
   }
 
+  function shouldUseSimpleMobileMode() {
+    return window.innerWidth < 1024 || window.matchMedia("(hover: none)").matches;
+  }
+
+  if (shouldUseSimpleMobileMode()) {
+    activateFallbackMode();
+    return;
+  }
+
   if (typeof window.gsap === "undefined" || typeof window.ScrollTrigger === "undefined") {
     activateFallbackMode();
     return;
